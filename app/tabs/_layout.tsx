@@ -1,9 +1,9 @@
 import { Tabs } from 'expo-router'
 import React from 'react'
 import { Platform } from 'react-native'
+import { BlurView } from 'expo-blur'
 
 import { IconSymbol } from '@/components/ui/IconSymbol'
-import TabBarBackground from '@/components/ui/TabBarBackground'
 import { useTheme } from '@/hooks/useTheme'
 
 export default function TabLayout() {
@@ -12,36 +12,41 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: isDark ? '#0A84FF' : '#007AFF',
+        tabBarActiveTintColor: '#3498DB',
         tabBarInactiveTintColor: isDark
-          ? 'rgba(255, 255, 255, 0.5)'
-          : 'rgba(0, 0, 0, 0.5)',
+          ? 'rgba(236, 240, 241, 0.5)'
+          : 'rgba(44, 62, 80, 0.5)',
         headerShown: false,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            position: 'absolute',
-            backgroundColor: isDark
-              ? 'rgba(0, 0, 0, 0.5)'
-              : 'rgba(255, 255, 255, 0.5)',
-            borderTopColor: isDark
-              ? 'rgba(255, 255, 255, 0.1)'
-              : 'rgba(0, 0, 0, 0.1)',
-          },
-          default: {
-            backgroundColor: isDark ? '#000000' : '#FFFFFF',
-            borderTopColor: isDark
-              ? 'rgba(255, 255, 255, 0.1)'
-              : 'rgba(0, 0, 0, 0.1)',
-          },
-        }),
+        tabBarBackground: () => (
+          <BlurView
+            tint={isDark ? 'dark' : 'light'}
+            intensity={isDark ? 30 : 50}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+            }}
+          />
+        ),
+        tabBarStyle: {
+          position: 'absolute',
+          backgroundColor: isDark
+            ? 'rgba(26, 27, 30, 0.8)'
+            : 'rgba(255, 255, 255, 0.8)',
+          borderTopWidth: 0,
+          elevation: 0,
+          height: Platform.OS === 'ios' ? 88 : 60,
+          paddingBottom: Platform.OS === 'ios' ? 34 : 8,
+        },
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: '创作中心',
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="wand.and.stars" color={color} />
+            <IconSymbol size={24} name="wand.and.stars" color={color} />
           ),
         }}
       />
@@ -50,7 +55,7 @@ export default function TabLayout() {
         options={{
           title: '个人中心',
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
+            <IconSymbol size={24} name="person.fill" color={color} />
           ),
         }}
       />

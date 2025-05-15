@@ -23,6 +23,7 @@ import { BlurView } from 'expo-blur'
 import { LoadingFrame } from '@/components/ui/LoadingFrame'
 import { IconSymbol } from '@/components/ui/IconSymbol'
 import { useTheme } from '@/hooks/useTheme'
+import { LinearGradient } from 'expo-linear-gradient'
 
 type ImageSize =
   | '1024x1024'
@@ -43,15 +44,10 @@ interface ImageSizeOption {
 }
 
 const imageSizeOptions: ImageSizeOption[] = [
-  { id: '1024x1024', label: '1024x1024', width: 1024, height: 1024 },
-  { id: '960x1280', label: '960x1280', width: 960, height: 1280 },
-  { id: '768x1024', label: '768x1024', width: 768, height: 1024 },
-  { id: '720x1440', label: '720x1440', width: 720, height: 1440 },
-  { id: '720x1280', label: '720x1280', width: 720, height: 1280 },
-  { id: '1280x720', label: '1280x720', width: 1280, height: 720 },
-  { id: '1440x720', label: '1440x720', width: 1440, height: 720 },
-  { id: '1920x1080', label: '1920x1080', width: 1920, height: 1080 },
-  { id: '2048x1080', label: '2048x1080', width: 2048, height: 1080 },
+  { id: '1024x1024', label: '1:1', width: 1024, height: 1024 },
+  { id: '960x1280', label: '3:4', width: 960, height: 1280 },
+  { id: '1280x720', label: '16:9', width: 1280, height: 720 },
+  { id: '1920x1080', label: 'HD', width: 1920, height: 1080 },
 ]
 
 export default function HomeScreen() {
@@ -253,245 +249,251 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <LinearGradient
+        colors={isDark ? ['#1A1B1E', '#2C3E50', '#34495E'] : ['#E8F3F9', '#D5E6F3', '#C2D9ED']}
+        style={StyleSheet.absoluteFill}
+      />
       <ScrollView
-        style={styles.scrollView}
+        style={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop: insets.top,
-          paddingBottom: insets.bottom + 100,
-          paddingHorizontal: horizontalPadding,
-          alignItems: 'center',
-          flexGrow: 1,
-        }}>
-        <ThemedView
-          style={[
-            styles.content,
-            { width: contentWidth - horizontalPadding * 2 },
-          ]}>
-          <Animated.View style={[styles.welcomeContainer, { marginTop: 20 }]}>
-            <BlurView
-              intensity={20}
-              tint={isDark ? 'dark' : 'light'}
-              style={StyleSheet.absoluteFill}
+          paddingBottom: Math.max(insets.bottom + 20, 40),
+        }}
+      >
+        <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? 70 : 30 }]}>
+          <ThemedText style={[styles.subtitle, { color: isDark ? '#ECF0F1' : '#34495E' }]}>
+            输入描述，让AI为你创作精美的图片
+          </ThemedText>
+        </View>
+
+        <View style={styles.inputContainer}>
+          <BlurView intensity={isDark ? 20 : 50} tint={isDark ? "dark" : "light"} style={styles.blurContainer}>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  color: isDark ? '#ECF0F1' : '#2C3E50',
+                  backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.5)',
+                },
+              ]}
+              placeholder="请输入图片描述..."
+              placeholderTextColor={isDark ? 'rgba(236, 240, 241, 0.5)' : 'rgba(44, 62, 80, 0.5)'}
+              value={prompt}
+              onChangeText={setPrompt}
+              multiline
+              numberOfLines={4}
             />
+          </BlurView>
+        </View>
 
-            <View style={styles.sizeContainer}>
-              <ThemedText style={styles.sizeTitle}>选择图片尺寸</ThemedText>
-              <View style={styles.sizeOptions}>
-                {imageSizeOptions.map(option => (
-                  <TouchableOpacity
-                    key={option.id}
+        <View style={styles.controlsContainer}>
+          <BlurView intensity={isDark ? 20 : 50} tint={isDark ? "dark" : "light"} style={[styles.controlGroup, {
+            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.5)',
+          }]}>
+            <ThemedText style={[styles.controlLabel, { color: isDark ? '#ECF0F1' : '#2C3E50' }]}>
+              图片尺寸
+            </ThemedText>
+            <View style={styles.sizeSelector}>
+              {imageSizeOptions.map(option => (
+                <TouchableOpacity
+                  key={option.id}
+                  style={[
+                    styles.sizeButton,
+                    {
+                      backgroundColor:
+                        selectedSize === option.id
+                          ? isDark ? 'rgba(236, 240, 241, 0.2)' : 'rgba(44, 62, 80, 0.1)'
+                          : 'transparent',
+                      borderColor: isDark ? 'rgba(236, 240, 241, 0.2)' : 'rgba(44, 62, 80, 0.2)',
+                    },
+                  ]}
+                  onPress={() => setSelectedSize(option.id)}
+                >
+                  <ThemedText
                     style={[
-                      styles.sizeButton,
-                      selectedSize === option.id && styles.sizeButtonSelected,
+                      styles.sizeButtonText,
+                      {
+                        color: isDark ? '#ECF0F1' : '#2C3E50',
+                        opacity: selectedSize === option.id ? 1 : 0.7,
+                      },
                     ]}
-                    onPress={() => setSelectedSize(option.id)}>
-                    <BlurView
-                      intensity={20}
-                      tint={isDark ? 'dark' : 'light'}
-                      style={StyleSheet.absoluteFill}
-                    />
-                    <ThemedText
-                      style={[
-                        styles.sizeButtonText,
-                        selectedSize === option.id &&
-                          styles.sizeButtonTextSelected,
-                      ]}>
-                      {option.label}
-                    </ThemedText>
-                  </TouchableOpacity>
-                ))}
-              </View>
+                  >
+                    {option.label}
+                  </ThemedText>
+                </TouchableOpacity>
+              ))}
             </View>
+          </BlurView>
 
-            <View style={styles.parameterContainer}>
-              <ThemedText style={styles.parameterTitle}>
-                生成数量 (1-3)
-              </ThemedText>
-              <View style={styles.parameterControl}>
-                {[1, 2, 3].map(num => (
-                  <TouchableOpacity
-                    key={num}
+          <BlurView intensity={isDark ? 20 : 50} tint={isDark ? "dark" : "light"} style={[styles.controlGroup, {
+            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.5)',
+          }]}>
+            <ThemedText style={[styles.controlLabel, { color: isDark ? '#ECF0F1' : '#2C3E50' }]}>
+              生成数量
+            </ThemedText>
+            <View style={styles.sizeSelector}>
+              {[1, 2, 3].map(num => (
+                <TouchableOpacity
+                  key={num}
+                  style={[
+                    styles.sizeButton,
+                    {
+                      backgroundColor:
+                        batchSize === num
+                          ? isDark ? 'rgba(236, 240, 241, 0.2)' : 'rgba(44, 62, 80, 0.1)'
+                          : 'transparent',
+                      borderColor: isDark ? 'rgba(236, 240, 241, 0.2)' : 'rgba(44, 62, 80, 0.2)',
+                      flex: 1,
+                      alignItems: 'center',
+                    },
+                  ]}
+                  onPress={() => setBatchSize(num)}
+                >
+                  <ThemedText
                     style={[
-                      styles.batchButton,
-                      batchSize === num && styles.batchButtonSelected,
+                      styles.sizeButtonText,
+                      {
+                        color: isDark ? '#ECF0F1' : '#2C3E50',
+                        opacity: batchSize === num ? 1 : 0.7,
+                      },
                     ]}
-                    onPress={() => setBatchSize(num)}>
-                    <BlurView
-                      intensity={20}
-                      tint={isDark ? 'dark' : 'light'}
-                      style={StyleSheet.absoluteFill}
-                    />
-                    <ThemedText
-                      style={[
-                        styles.batchButtonText,
-                        batchSize === num && styles.batchButtonTextSelected,
-                      ]}>
-                      {num}
-                    </ThemedText>
-                  </TouchableOpacity>
-                ))}
-              </View>
+                  >
+                    {num}
+                  </ThemedText>
+                </TouchableOpacity>
+              ))}
             </View>
+          </BlurView>
 
-            <View style={styles.parameterContainer}>
-              <ThemedText style={styles.parameterTitle}>
-                推理步数 ({numInferenceSteps})
-              </ThemedText>
+          <BlurView intensity={isDark ? 20 : 50} tint={isDark ? "dark" : "light"} style={[styles.controlGroup, {
+            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.5)',
+          }]}>
+            <ThemedText style={[styles.controlLabel, { color: isDark ? '#ECF0F1' : '#2C3E50' }]}>
+              迭代步数: {numInferenceSteps}
+            </ThemedText>
+            <View style={styles.sliderContainer}>
               <Slider
-                style={styles.slider}
-                minimumValue={1}
-                maximumValue={100}
+                style={{ width: '100%', height: 40 }}
+                minimumValue={10}
+                maximumValue={50}
                 step={1}
                 value={numInferenceSteps}
                 onValueChange={handleInferenceStepsChange}
-                minimumTrackTintColor={isDark ? '#FFFFFF' : '#000000'}
-                maximumTrackTintColor={isDark ? '#666666' : '#CCCCCC'}
-                thumbTintColor={isDark ? '#FFFFFF' : '#000000'}
+                minimumTrackTintColor={isDark ? '#3498DB' : '#3498DB'}
+                maximumTrackTintColor={isDark ? 'rgba(236, 240, 241, 0.2)' : 'rgba(44, 62, 80, 0.2)'}
+                thumbTintColor={isDark ? '#5DADE2' : '#2980B9'}
               />
             </View>
+          </BlurView>
 
-            <View style={styles.parameterContainer}>
-              <ThemedText style={styles.parameterTitle}>
-                引导系数 ({guidanceScale.toFixed(1)})
-              </ThemedText>
+          <BlurView intensity={isDark ? 20 : 50} tint={isDark ? "dark" : "light"} style={[styles.controlGroup, {
+            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.5)',
+          }]}>
+            <ThemedText style={[styles.controlLabel, { color: isDark ? '#ECF0F1' : '#2C3E50' }]}>
+              引导强度: {guidanceScale}
+            </ThemedText>
+            <View style={styles.sliderContainer}>
               <Slider
-                style={styles.slider}
-                minimumValue={0}
+                style={{ width: '100%', height: 40 }}
+                minimumValue={1}
                 maximumValue={20}
-                step={0.1}
+                step={0.5}
                 value={guidanceScale}
                 onValueChange={handleGuidanceScaleChange}
-                minimumTrackTintColor={isDark ? '#FFFFFF' : '#000000'}
-                maximumTrackTintColor={isDark ? '#666666' : '#CCCCCC'}
-                thumbTintColor={isDark ? '#FFFFFF' : '#000000'}
+                minimumTrackTintColor={isDark ? '#3498DB' : '#3498DB'}
+                maximumTrackTintColor={isDark ? 'rgba(236, 240, 241, 0.2)' : 'rgba(44, 62, 80, 0.2)'}
+                thumbTintColor={isDark ? '#5DADE2' : '#2980B9'}
               />
             </View>
+          </BlurView>
+        </View>
 
-            <View style={styles.inputContainer}>
-              <BlurView
-                intensity={20}
-                tint={isDark ? 'dark' : 'light'}
-                style={StyleSheet.absoluteFill}
-              />
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    color: isDark ? '#FFFFFF' : '#000000',
-                  },
-                ]}
-                placeholder="描述你想创作的图片，例如：'一只可爱的熊猫在竹林中吃竹子'"
-                value={prompt}
-                onChangeText={setPrompt}
-                multiline
-                placeholderTextColor={
-                  isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(60, 60, 67, 0.6)'
-                }
-              />
-            </View>
+        <TouchableOpacity
+          style={[
+            styles.generateButton,
+            {
+              backgroundColor: isDark ? '#3498DB' : '#3498DB',
+              opacity: loading ? 0.7 : 1,
+            },
+          ]}
+          onPress={generateImage}
+          disabled={loading}
+        >
+          <ThemedText
+            style={[
+              styles.generateButtonText,
+              {
+                color: '#fff',
+              },
+            ]}
+          >
+            {loading ? '生成中...' : '开始生成'}
+          </ThemedText>
+        </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.button, loading && styles.buttonDisabled]}
-              onPress={generateImage}
-              disabled={loading}>
-              <BlurView
-                intensity={60}
-                tint={isDark ? 'dark' : 'light'}
-                style={[
-                  StyleSheet.absoluteFill,
-                  { backgroundColor: isDark ? '#007AFF80' : '#007AFFCC' },
-                ]}
-              />
-              <ThemedText style={[styles.buttonText, { color: '#FFFFFF' }]}>
-                {loading ? '创作中...' : '开始创作'}
-              </ThemedText>
-            </TouchableOpacity>
-          </Animated.View>
+        {error ? (
+          <ThemedText style={[styles.errorText, { color: isDark ? '#E74C3C' : '#E74C3C' }]}>
+            {error}
+          </ThemedText>
+        ) : null}
 
-          {error ? (
-            <View style={styles.errorContainer}>
-              <BlurView
-                intensity={40}
-                tint={isDark ? 'dark' : 'light'}
-                style={StyleSheet.absoluteFill}
-              />
-              <ThemedText style={styles.errorText}>{error}</ThemedText>
-            </View>
-          ) : null}
-
-          {(loading || generatedImages.length > 0) && (
-            <View style={styles.resultContainer}>
-              <Animated.View style={[styles.imagesGrid, { opacity: fadeAnim }]}>
-                {loading
-                  ? Array(batchSize)
-                      .fill(0)
-                      .map((_, index) => (
-                        <LoadingFrame
-                          key={index}
-                          width={imageSize.width}
-                          height={imageSize.height}
-                        />
-                      ))
-                  : generatedImages.map((url, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        style={[styles.imageWrapper]}
-                        onPress={() => handleImagePress(index)}>
-                        <Image
-                          source={{ uri: url }}
-                          style={[
-                            styles.generatedImage,
-                            {
-                              width: imageSize.width,
-                              height: imageSize.height,
-                            },
-                          ]}
-                          resizeMode="contain"
-                        />
-                      </TouchableOpacity>
-                    ))}
-              </Animated.View>
-
-              {generatedImages.length > 0 && (
-                <TouchableOpacity
-                  style={[styles.button, styles.newButton]}
-                  onPress={() => {
-                    setGeneratedImages([])
-                    setPrompt('')
-                    setConversationSeed(null)
-                  }}
-                  disabled={loading}>
-                  <BlurView
-                    intensity={40}
-                    tint={isDark ? 'dark' : 'light'}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  <ThemedText style={[styles.buttonText, { color: '#007AFF' }]}>
-                    新的创作
-                  </ThemedText>
-                </TouchableOpacity>
-              )}
-            </View>
+        <View style={styles.imagesContainer}>
+          {loading ? (
+            Array(batchSize)
+              .fill(0)
+              .map((_, index) => (
+                <LoadingFrame
+                  key={index}
+                  width={imageSize.width}
+                  height={imageSize.height}
+                />
+              ))
+          ) : (
+            generatedImages.map((imageUrl, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[styles.imageWrapper, {
+                  backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.5)',
+                }]}
+                onPress={() => handleImagePress(index)}
+              >
+                <Image
+                  source={{ uri: imageUrl }}
+                  style={[
+                    styles.image,
+                    {
+                      width: imageSize.width,
+                      height: imageSize.height,
+                    },
+                  ]}
+                />
+              </TouchableOpacity>
+            ))
           )}
-        </ThemedView>
+        </View>
       </ScrollView>
 
       <Modal
         visible={selectedImageIndex !== null}
         transparent={true}
-        onRequestClose={closeImageViewer}>
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={closeImageViewer}>
-          {selectedImageIndex !== null && (
-            <Image
-              source={{ uri: generatedImages[selectedImageIndex] }}
-              style={styles.modalImage}
-              resizeMode="contain"
-            />
-          )}
-        </TouchableOpacity>
+        onRequestClose={closeImageViewer}
+      >
+        <View style={[styles.modalContainer, {
+          backgroundColor: isDark ? 'rgba(26, 27, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+        }]}>
+          <Image
+            source={{ uri: generatedImages[selectedImageIndex!] }}
+            style={styles.modalImage}
+          />
+          <TouchableOpacity
+            style={[styles.closeButton, {
+              backgroundColor: isDark ? 'rgba(44, 62, 80, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+            }]}
+            onPress={closeImageViewer}
+          >
+            <IconSymbol name="xmark" size={24} color={isDark ? '#ECF0F1' : '#2C3E50'} />
+          </TouchableOpacity>
+        </View>
       </Modal>
     </ThemedView>
   )
@@ -501,164 +503,124 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollView: {
+  contentContainer: {
     flex: 1,
   },
-  content: {
-    flex: 1,
-    gap: 20,
+  header: {
+    marginBottom: 20,
+    paddingHorizontal: 20,
   },
-  welcomeContainer: {
-    width: '100%',
-    borderRadius: 20,
-    padding: 20,
-    gap: 20,
-    overflow: 'hidden',
-  },
-  sizeContainer: {
-    width: '100%',
-  },
-  sizeTitle: {
+  subtitle: {
     fontSize: 17,
-    fontWeight: '600',
-    marginBottom: 12,
+    opacity: 0.8,
+    lineHeight: 24,
+    textAlign: 'center',
   },
-  sizeOptions: {
+  inputContainer: {
+    marginHorizontal: 20,
+    marginBottom: 24,
+  },
+  input: {
+    height: 120,
+    borderRadius: 16,
+    padding: 16,
+    fontSize: 16,
+    textAlignVertical: 'top',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  controlsContainer: {
+    marginHorizontal: 20,
+    marginBottom: 24,
+    gap: 16,
+  },
+  controlGroup: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  controlLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 16,
+    marginBottom: 8,
+    paddingHorizontal: 16,
+  },
+  sizeSelector: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+    padding: 16,
+    paddingTop: 8,
   },
   sizeButton: {
-    borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    overflow: 'hidden',
+    paddingVertical: 10,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  sizeButtonSelected: {
-    backgroundColor: 'rgba(0, 122, 255, 0.1)',
-    borderColor: '#007AFF',
   },
   sizeButtonText: {
     fontSize: 15,
     fontWeight: '500',
   },
-  sizeButtonTextSelected: {
-    color: '#007AFF',
+  sliderContainer: {
+    padding: 16,
+    paddingTop: 0,
   },
-  parameterContainer: {
-    width: '100%',
-  },
-  parameterTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  parameterControl: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  batchButton: {
-    flex: 1,
-    borderRadius: 12,
-    paddingVertical: 8,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-    alignItems: 'center',
-  },
-  batchButtonSelected: {
-    backgroundColor: 'rgba(0, 122, 255, 0.1)',
-    borderColor: '#007AFF',
-  },
-  batchButtonText: {
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  batchButtonTextSelected: {
-    color: '#007AFF',
-  },
-  slider: {
-    width: '100%',
-    height: 40,
-  },
-  inputContainer: {
-    width: '100%',
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  input: {
-    width: '100%',
-    minHeight: 100,
-    padding: 12,
-    fontSize: 15,
-    textAlignVertical: 'top',
-  },
-  button: {
-    width: '100%',
-    height: 50,
-    borderRadius: 12,
-    overflow: 'hidden',
+  generateButton: {
+    height: 56,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
+    marginHorizontal: 20,
+    marginTop: 8,
   },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  buttonText: {
-    fontSize: 17,
+  generateButtonText: {
+    fontSize: 18,
     fontWeight: '600',
-    zIndex: 1,
   },
-  newButton: {
-    backgroundColor: 'rgba(0, 122, 255, 0.1)',
-    borderWidth: 1,
-    borderColor: '#007AFF',
-  },
-  errorContainer: {
-    width: '100%',
-    borderRadius: 12,
-    padding: 12,
-    overflow: 'hidden',
-  },
-  errorText: {
-    color: '#FF453A',
-    fontSize: 15,
-    fontWeight: '500',
-    textAlign: 'center',
-    letterSpacing: -0.24,
-  },
-  resultContainer: {
-    width: '100%',
-    marginTop: 20,
-    gap: 20,
-  },
-  imagesGrid: {
-    width: '100%',
+  imagesContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
+    marginTop: 24,
+    paddingHorizontal: 20,
   },
   imageWrapper: {
-    borderRadius: 20,
+    borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    flex: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
-  generatedImage: {
-    borderRadius: 20,
+  image: {
+    borderRadius: 16,
   },
-  modalOverlay: {
+  modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
   },
   modalImage: {
     width: '100%',
     height: '100%',
+    resizeMode: 'contain',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 20,
+    right: 20,
+    padding: 12,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  },
+  errorText: {
+    color: '#E74C3C',
+    marginTop: 8,
+    fontSize: 14,
+    textAlign: 'center',
+    marginHorizontal: 20,
+  },
+  blurContainer: {
+    borderRadius: 16,
+    overflow: 'hidden',
   },
 })
