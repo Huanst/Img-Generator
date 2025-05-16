@@ -20,21 +20,33 @@ export default function TabLayout() {
         tabBarBackground: () => (
           <BlurView
             tint={isDark ? 'dark' : 'light'}
-            intensity={isDark ? 30 : 50}
+            intensity={Platform.select({
+              ios: isDark ? 30 : 50,
+              android: isDark ? 120 : 150,
+            })}
             style={{
               position: 'absolute',
               top: 0,
               left: 0,
               right: 0,
               bottom: 0,
+              backgroundColor: Platform.select({
+                ios: 'transparent',
+                android: isDark
+                  ? 'rgba(26, 27, 30, 0.3)'
+                  : 'rgba(255, 255, 255, 0.3)',
+              }),
             }}
           />
         ),
         tabBarStyle: {
           position: 'absolute',
-          backgroundColor: isDark
-            ? 'rgba(26, 27, 30, 0.8)'
-            : 'rgba(255, 255, 255, 0.8)',
+          backgroundColor: Platform.select({
+            ios: isDark ? 'rgba(26, 27, 30, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+            android: isDark
+              ? 'rgba(26, 27, 30, 0.7)'
+              : 'rgba(255, 255, 255, 0.7)',
+          }),
           borderTopWidth: 0,
           elevation: 0,
           height: Platform.OS === 'ios' ? 88 : 60,
